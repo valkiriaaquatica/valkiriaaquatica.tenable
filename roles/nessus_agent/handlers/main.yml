@@ -1,0 +1,19 @@
+---
+# handlers file for roles
+# linux
+- name: service linux
+  ansible.builtin.systemd:
+    name: nessusagent.service
+    state: started
+    enabled: yes
+  become: yes
+  tags: service
+
+# windows
+- name: Make sure nessus agent service is running and enabled windows
+  ansible.windows.win_service:
+    name: "Tenable Nessus Agent"
+    start_mode: auto
+    state: started
+  register: resultado
+  tags: service

@@ -1,0 +1,34 @@
+---
+- name: Get network details of a specified network
+  get_network_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    network_id: "{{ network_uuid }}"
+  register: network_details
+
+- name: Verificar la respuesta de redes filtradas
+  ansible.builtin.assert:
+    that:
+      - network_details.api_response.status_code == 200
+      - '"data" in network_details.api_response'
+      - '"created" in network_details.api_response.data'
+      - '"uuid" in network_details.api_response.data'
+      - 'network_details.api_response.data.uuid == network_uuid'
+
+
+- name: Get assets with log4j and with enviroment credential variables
+  valkiriaaquatica.tenable.list_asset_with_vulnerabilities:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: plugin.name
+        operator: match
+        value: log4j
+  register: assets_with_lo4gj
+
+- name: Verify that there are assets returned
+  ansible.builtin.assert:
+    that:
+      - assets_with_lo4gj.api_response.status_code == 200
+      - '"assets" in assets_with_lo4gj.api_response.data'
+      - 'assets_with_lo4gj.api_response.data.assets | length > 0'

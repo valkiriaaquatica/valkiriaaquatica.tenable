@@ -1,0 +1,67 @@
+# windows uses the same .exe for all the versions
+# tested on windows 2022, 2019, 2016
+
+- name: Download Nessus Agent .msi in local machine
+  valkiriaaquatica.tenable.download_nessus_agent:
+    os_distribution: "{{ ansible_facts['os_family'] }}"
+    dest: "/tmp/"
+  register: nessu_agent_download
+  delegate_to: localhost
+  tags: download
+
+- name: Get the package name just downloaded
+  ansible.builtin.set_fact:
+    nessus_agent_filename: "{{ nessu_agent_download.filename }}"
+  delegate_to: localhost
+
+- name: Assert Temp directory exists
+  win_file:
+    path: "C:\\Temp"
+    state: directory
+
+- name: Copy the nessu agent .msi package to the windows host
+  win_copy:
+    src: "/tmp/{{ nessus_agent_filename }}"
+    dest: "C:\\Temp\\{{ nessus_agent_filename }}"
+
+- name: Install nessus agent
+  win_package:
+    path: "C:\\Temp\\{{ nessus_agent_filename }}"
+    state: present
+  register: install_result
+  notify: Make sure nessus agent service is running and enabled windows
+
+
+- name: Including task of linking
+  ansible.builtin.include_tasks: 
+    file: common.yml
+    apply:
+      tags:
+        - link_windows
+
+- name: Set fact of ansible_host name of remote machine
+  set_fact:
+    ansible_host_var: "{{ ansible_host }}" 
+  
+- name: Check if the agent is linked in Tenable.io
+  valkiriaaquatica.tenable.list_agents:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: name
+        operator: eq
+        value: "{{ ansible_host_var }}"
+  register: agent_verification
+  delegate_to: localhost
+  tags: verify
+
+- name: Verify the response is correct
+  ansible.builtin.assert:
+    that:
+      - agent_verification.api_response.status_code == 200
+      - agent_verification.api_response.data.agents[0].name == ansible_host
+  tags: verify
+
+- name: Unlink the machine nessus agent from Tenable.
+  valkiriaaquatica.tenable.unlink_agent_windows:
+  tags: unlink

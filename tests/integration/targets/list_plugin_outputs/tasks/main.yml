@@ -1,0 +1,12 @@
+- name: Retrieve plugin details with specific filters
+  list_plugin_outputs:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    plugin_id: 56
+  register: plugin_outputs
+
+- name: Verify plugin outputs are received
+  ansible.builtin.assert:
+    that:
+      - plugin_outputs.api_response.status_code == 200
+      - '"outputs" in plugin_outputs.api_response.data'

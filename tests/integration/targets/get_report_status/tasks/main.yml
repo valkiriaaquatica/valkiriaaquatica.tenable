@@ -1,0 +1,35 @@
+- name: Create a report using plugin id
+  create_report:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    name: "creation_report"
+    template_name: "host_vulns_summary"
+    filters:
+      - property: "plugin_id"
+        operator: "eq"
+        value: [12345]
+  register: create_report_response
+
+- name: Verify the group is well created
+  ansible.builtin.assert:
+    that:
+      - create_report_response.api_response.status_code == 200
+      - create_report_response.changed
+
+- name: Get report uuid
+  set_fact:
+    report_uuid: "{{ create_report_response.api_response.data.uuid }}"
+
+
+- name: List plugin in families
+  valkiriaaquatica.tenable.get_report_status: 
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    report_uuid: "{{ report_uuid }}"
+  register: get_report_status
+
+- name: Verify the group is well created
+  ansible.builtin.assert:
+    that:
+      - get_report_status.api_response.status_code == 200
+      - '"status" in get_report_status.api_response.data'

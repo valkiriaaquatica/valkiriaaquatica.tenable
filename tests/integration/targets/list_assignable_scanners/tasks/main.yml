@@ -1,0 +1,12 @@
+- name: List assignable scanners
+  list_assignable_scanners:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    network_id: "{{ network_uuid }}"
+  register: assignable_scanners
+
+- name: Verify network was well created
+  ansible.builtin.assert:
+    that:
+      - assignable_scanners.api_response.status_code == 200
+      - '"scanners" in assignable_scanners.api_response.data'

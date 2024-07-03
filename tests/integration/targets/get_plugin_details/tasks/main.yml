@@ -1,0 +1,12 @@
+- name: Get plugin details
+  get_plugin_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    plugin_id: "56"
+  register: plugin_details
+
+
+- name: Verify plugin details are received
+  ansible.builtin.assert:
+    that:
+      - plugin_details.api_response.status_code == 200

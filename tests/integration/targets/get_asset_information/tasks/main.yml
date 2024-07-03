@@ -1,0 +1,13 @@
+- name: Get asset information
+  get_asset_information:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    asset_id: "{{ asset_to_add_and_remove_tags_uuid }}"
+  register: get_asset_information_response
+    
+
+- name: Verify response
+  ansible.builtin.assert:
+    that:
+      - get_asset_information_response.api_response.status_code == 200
+      - get_asset_information_response.api_response.data.info.uuid == asset_to_add_and_remove_tags_uuid

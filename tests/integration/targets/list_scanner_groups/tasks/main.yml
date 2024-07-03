@@ -1,0 +1,11 @@
+- name: List scanner groups
+  list_scanner_groups:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: list_scanner_groups_response
+
+- name: Verify all scanners is well returned
+  ansible.builtin.assert:
+    that:
+      - list_scanner_groups_response.api_response.status_code == 200
+      - '"scanner_pools" in list_scanner_groups_response.api_response.data'

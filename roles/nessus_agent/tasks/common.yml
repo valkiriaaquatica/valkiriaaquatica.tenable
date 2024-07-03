@@ -1,0 +1,23 @@
+  
+- name: Link the machine to Tenable.IO in LINUX
+  valkiriaaquatica.tenable.link_agent_linux:
+    linking_key: "{{ linking_key }}"
+    name: "{{ ansible_host }}"
+    groups: "{{ tenable_group }}"
+    network: "{{ tenable_network }}"
+    host: "{{ tenable_host }}"
+    port: "{{ tenable_port }}"
+  become: yes
+  tags: link_linux
+  when: ansible_facts['os_family'] != 'Windows'
+
+- name: Link the machine to Tenable.IO in WINDOWS
+  valkiriaaquatica.tenable.link_agent_windows:
+    linking_key: "{{ linking_key }}"
+    name: "{{ ansible_host }}"
+    groups: "{{ tenable_group }}"
+    network: "{{ tenable_network }}"
+    host: "{{ tenable_host }}"
+    port: "{{ tenable_port }}"
+  tags: link_windows
+  when: ansible_facts['os_family'] == 'Windows'

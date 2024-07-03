@@ -1,0 +1,198 @@
+# here i can try to emulate with the differente container images in
+# https://github.com/ansible/ansible/blob/devel/test/lib/ansible_test/_data/completion/docker.txt
+
+- name: Ensure requests module exists in the target machine
+  ansible.builtin.command: pip install requests  # pip is default pip3 in ubuntu 22 and 20
+
+- name: Download latest nessus agent and saved it in /tmp directory
+  download_nessus_agent:
+    os_distribution: "{{ ansible_facts['distribution'] }}"
+    os_version: "{{ ansible_facts['lsb']['major_release'] }}"
+    dest: "/tmp/"
+  register: nessus_agent_download
+
+- name: Verify package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in nessus_agent_download'
+      - '"download sucessefully" in nessus_agent_download.msg'
+      - nessus_agent_download.changed
+
+  # download other packages but not with vars
+- name: Download latest Amazon Linux nesssus agent
+  download_nessus_agent:
+    os_distribution: "Amazon"
+    dest: "/tmp/" 
+  register: amazon_package
+
+- name: Verify amazon package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in amazon_package'
+      - '"download sucessefully" in amazon_package.msg'
+      - amazon_package.changed
+
+- name: Download latest CentOS 7 nesssus agent
+  download_nessus_agent:
+    os_distribution: "CentOS"
+    os_version: "7"
+    dest: "/tmp/" 
+  register: centos_package_7
+
+- name: Verify centos package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in centos_package_7'
+      - '"download sucessefully" in centos_package_7.msg'
+      - centos_package_7.changed
+
+- name: Download latest CentOS 8 nesssus agent
+  download_nessus_agent:
+    os_distribution: "CentOS"
+    os_version: "8"
+    dest: "/tmp/" 
+  register: centos_package_8
+
+- name: Verify centos 8 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in centos_package_8'
+      - '"download sucessefully" in centos_package_8.msg'
+      - centos_package_8.changed
+
+- name: Download latest OracleLinux 7 nesssus agent
+  download_nessus_agent:
+    os_distribution: "OracleLinux"
+    os_version: "7"
+    dest: "/tmp/" 
+  register: oracle_package_7
+
+- name: Verify OracleLinux 7 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in oracle_package_7'
+      - '"download sucessefully" in oracle_package_7.msg'
+      - oracle_package_7.changed
+
+- name: Download latest OracleLinux 8 nesssus agent
+  download_nessus_agent:
+    os_distribution: "OracleLinux"
+    os_version: "8"
+    dest: "/tmp/" 
+  register: oracle_package_8
+
+- name: Verify OracleLinux 7 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in oracle_package_8'
+      - '"download sucessefully" in oracle_package_8.msg'
+      - oracle_package_8.changed
+
+- name: Download latest Debian nesssus agent
+  download_nessus_agent:
+    os_distribution: "Debian"
+    dest: "/tmp/" 
+  register: debian
+
+- name: Verify Debian package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in debian'
+      - '"download sucessefully" in debian.msg'
+      - debian.changed
+
+- name: Download latest RedHat 6 nesssus agent
+  download_nessus_agent:
+    os_distribution: "RedHat"
+    os_version: "6"
+    dest: "/tmp/" 
+  register: red_hat_6
+
+- name: Verify RedHat 6 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in red_hat_6'
+      - '"download sucessefully" in red_hat_6.msg'
+      - red_hat_6.changed
+
+- name: Download latest RedHat 7 nesssus agent
+  download_nessus_agent:
+    os_distribution: "RedHat"
+    os_version: "7"
+    dest: "/tmp/" 
+  register: red_hat_7
+
+- name: Verify RedHat 7 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in red_hat_7'
+      - '"download sucessefully" in red_hat_7.msg'
+      - red_hat_7.changed
+
+- name: Download latest RedHat 8 nesssus agent
+  download_nessus_agent:
+    os_distribution: "RedHat"
+    os_version: "8"
+    dest: "/tmp/" 
+  register: red_hat_8
+
+- name: Verify RedHat 8 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in red_hat_8'
+      - '"download sucessefully" in red_hat_8.msg'
+      - red_hat_8.changed
+
+- name: Download latest SLES 12 nesssus agent
+  download_nessus_agent:
+    os_distribution: "SLES"
+    os_version: "12"
+    dest: "/tmp/" 
+  register: sles_12
+
+- name: Verify SLES 12 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in sles_12'
+      - '"download sucessefully" in sles_12.msg'
+      - sles_12.changed
+
+- name: Download latest SLES 15 nesssus agent
+  download_nessus_agent:
+    os_distribution: "SLES"
+    os_version: "15"
+    dest: "/tmp/" 
+  register: sles_15
+
+- name: Verify SLES 15 package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in sles_15'
+      - '"download sucessefully" in sles_15.msg'
+      - sles_15.changed
+
+- name: Download latest Ubuntu nesssus agent
+  download_nessus_agent:
+    os_distribution: "Ubuntu"
+    dest: "/tmp/" 
+  register: ubuntu
+
+- name: Verify Ubuntu package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in ubuntu'
+      - '"download sucessefully" in ubuntu.msg'
+      - ubuntu.changed
+
+- name: Download latest Windows nesssus agent
+  download_nessus_agent:
+    os_distribution: "Windows"
+    dest: "/tmp/" 
+  register: windows
+
+- name: Verify windows package was download
+  ansible.builtin.assert:
+    that:
+      - '"filename" in windows'
+      - '"download sucessefully" in windows.msg'
+      - windows.changed

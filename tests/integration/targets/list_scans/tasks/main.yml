@@ -1,0 +1,56 @@
+- block:
+    - name: Create folder
+      create_folder:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "ansible-collection_folder"
+      register: create_folder_response
+
+    - name: Verify creation was well
+      ansible.builtin.assert:
+        that:
+          - create_folder_response.api_response.status_code == 200
+          - create_folder_response.changed
+
+    - name: Get folder id
+      set_fact:
+        folder_id_creation: "{{ create_folder_response.api_response.data.id }}"
+  
+    - name: List all scans
+      list_scans:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+      register: all_scans
+
+    - name: Verify all scans is well received
+      ansible.builtin.assert:
+        that:
+          - all_scans.api_response.status_code == 200
+          - '"scans" in all_scans.api_response.data'
+
+    - name: List scan from folder
+      list_scans:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        folder_id: "{{ folder_id_creation }}"
+      register: folder_scans
+
+    - name: Verify all scans is well received
+      ansible.builtin.assert:
+        that:
+          - folder_scans.api_response.status_code == 200
+          - '"folders" in folder_scans.api_response.data'
+  always:
+    - name: Delete the folder
+      delete_folder:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        folder_id: "{{ folder_id_creation }}"
+      when: folder_id_creation is defined
+      register: delete_folder_response
+
+    - name: Verify delete was well
+      ansible.builtin.assert:
+        that:
+          - delete_folder_response.api_response.status_code == 200
+          - delete_folder_response.changed

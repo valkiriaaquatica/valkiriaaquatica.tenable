@@ -1,0 +1,39 @@
+- name: List scan templates
+  list_templates:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    type: "scan"
+  register: scan_templates
+
+
+- name: Verify response
+  ansible.builtin.assert:
+    that:
+      - scan_templates.api_response.status_code == 200
+      - '"templates" in scan_templates.api_response.data'
+
+- name: List policy templates
+  list_templates:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    type: "policy"
+  register: policy_templates
+
+- name: Verify response
+  ansible.builtin.assert:
+    that:
+      - policy_templates.api_response.status_code == 200
+      - '"templates" in policy_templates.api_response.data'
+
+- name: List remediation templates
+  list_templates:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    type: "remediation"
+  register: remediation_templates
+
+- name: Verify response
+  ansible.builtin.assert:
+    that:
+      - remediation_templates.api_response.status_code == 200
+      - '"templates" in remediation_templates.api_response.data'

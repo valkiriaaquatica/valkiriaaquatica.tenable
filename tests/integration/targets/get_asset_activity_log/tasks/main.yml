@@ -1,0 +1,13 @@
+- name: Get asset activity log
+  get_asset_activity_log:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    asset_id: "{{ asset_to_add_and_remove_tags_uuid }}"
+  register: get_asset_activity_log_response
+    
+
+- name: Verify response
+  ansible.builtin.assert:
+    that:
+      - get_asset_activity_log_response.api_response.status_code == 200
+      - '"activity" in get_asset_activity_log_response.api_response.data'

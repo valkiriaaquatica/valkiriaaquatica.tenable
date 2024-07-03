@@ -1,0 +1,66 @@
+- block:
+    - name: Create a exclusion 
+      create_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "exception_test_name"
+        members: "192.168.13.99, 192.168.18.100"
+        schedule: 
+          enabled: true
+          starttime: "2021-04-01 09:00:00"
+          endtime: "2021-04-01 17:00:00"
+          timezone: "America/New_York"
+          rrules:
+            freq: "WEEKLY"
+            interval: 1
+            byweekday: "MO,TU,WE,TH,FR"  
+        #network_id: "{{ network_uuid_test }}"
+      register: exclusion_creation
+
+    - name: Verify exclusion was well created
+      ansible.builtin.assert:
+        that:
+          - exclusion_creation.api_response.status_code == 200
+          - exclusion_creation.changed
+          - 'exclusion_creation.api_response.data.name == "exception_test_name"'
+          - exclusion_creation.api_response.data.schedule.enabled == true
+          - exclusion_creation.api_response.data.schedule.endtime == "2021-04-01 17:00:00"
+          - exclusion_creation.api_response.data.schedule.rrules.freq == "WEEKLY"
+          - exclusion_creation.api_response.data.schedule.rrules.byweekday == "MO,TU,WE,TH,FR"  
+          - exclusion_creation.api_response.data.schedule.timezone == "America/New_York" 
+
+    # remove the exclusion
+    - name: Get exclusion id
+      ansible.builtin.set_fact:
+        exclusion_id_created: "{{ exclusion_creation.api_response.data.id }}"
+
+    - name: Update the exclusion
+      update_an_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id_created }}"
+        name: "new_name"
+      register: update_exclusion
+
+    - name: Verify the exclusion was changed
+      ansible.builtin.assert:
+        that:
+          - update_exclusion.api_response.status_code == 200
+          - update_exclusion.changed
+          - update_exclusion.api_response.data.name == "new_name"
+
+  always:
+    - name: Delete the exclusion
+      delete_an_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id_created }}"
+      when: exclusion_id_created is defined
+      register: delete_exclusion
+
+
+    - name: Verify exclusion was deleted
+      ansible.builtin.assert:
+        that:
+          - delete_exclusion.api_response.status_code == 200
+      when: delete_exclusion.changed

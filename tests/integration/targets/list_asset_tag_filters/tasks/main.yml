@@ -1,0 +1,11 @@
+- name: List tag asset filters
+  list_asset_tag_filters:
+      access_key: "{{ tenable_access_key }}"
+      secret_key: "{{ tenable_secret_key }}"
+  register: list_asset_filters
+
+- name: Verify filters are retuned
+  ansible.builtin.assert:
+    that:
+      - list_asset_filters.api_response.status_code == 200
+      - '"filters" in list_asset_filters.api_response.data'

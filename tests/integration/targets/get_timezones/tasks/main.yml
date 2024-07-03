@@ -1,0 +1,13 @@
+---
+- name: Get all timezones
+  get_timezones:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_timezones
+
+- name: Verify timezones are received
+  ansible.builtin.assert:
+    that:
+      - all_timezones.api_response.status_code == 200
+      - '"timezones" in all_timezones.api_response.data'
+      - "'Europe/Madrid' in (all_timezones.api_response.data.timezones | map(attribute='name') | list)"

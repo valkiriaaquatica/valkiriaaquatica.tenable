@@ -1,0 +1,43 @@
+# (c) 2024, @valkiriaaquatica (fernandomendietaovejero@gmail.com)
+# GNU General Public License v3.0+ (see COPYING o https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+__metaclass__ = type
+
+from unittest.mock import patch
+
+import pytest
+from ansible_collections.valkiriaaquatica.tenable.plugins.modules.move_assets import main
+from ansible_collections.valkiriaaquatica.tenable.tests.unit.constants import BASE_MODULE_PATH
+
+
+@pytest.fixture
+def mock_module():
+    with patch(BASE_MODULE_PATH + "move_assets.AnsibleModule", autospec=True) as mock:
+        yield mock
+
+
+def test_move_assets(mock_module):
+    mock_module.return_value.params = {
+        "access_key": "fake_access_key",
+        "secret_key": "fake_secret_key",
+        "source": "123456",
+        "destination": "654321",
+        "targets": "192.168.1.120",
+    }
+
+    with patch(BASE_MODULE_PATH + "move_assets.build_payload") as mock_build_payload:
+        mock_build_payload.return_value = {"source": "123456", "destination": "654321", "targets": "192.168.1.120"}
+
+        with patch(BASE_MODULE_PATH + "move_assets.run_module") as mock_run_module:
+            main()
+            mock_build_payload.assert_called_once_with(mock_module.return_value, ["source", "destination", "targets"])
+            mock_run_module.assert_called_once_with(
+                mock_module.return_value,
+                "api/v2/assets/bulk-jobs/move-to-network",
+                method="POST",
+                data={"source": "123456", "destination": "654321", "targets": "192.168.1.120"},
+            )

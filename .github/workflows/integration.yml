@@ -1,0 +1,118 @@
+name: Integration tests, dependencies from source
+# this workflow is not run in any action
+
+on:
+  workflow_dispatch:
+
+jobs:
+  integration_source:
+    env:
+      PY_COLORS: "1"
+      source_directory: "./source"
+      collection_base_dir: "/home/runner/collections"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - stable-2.15
+          - stable-2.16
+          - stable-2.17
+          - milestone
+          - devel
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+        exclude:
+          - ansible-version: stable-2.15
+            python-version: "3.12"
+    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
+    steps:
+      - name: Checkout the collection repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          path: ${{ env.source_directory }}
+          fetch-depth: "0"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install ansible-core (${{ matrix.ansible-version }})
+        run: |
+          python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      - name: Pre install collections dependencies first so the collection install does not
+        if: ${{ inputs.collection_pre_install != '' }}
+        run: |
+          ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p ${{ env.collection_base_dir }}
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        with:
+          source_path: ${{ env.source_directory }}
+
+      - name: Build and install the collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+          ansible_version: ${{ matrix.ansible-version }}
+
+      - name: Print the ansible version
+        run: ansible --version
+
+      - name: Print the python dependencies
+        run: python3 -m pip list
+
+      - name: Create integration_config.yml
+        run: |
+          cd ${{ steps.identify.outputs.collection_path }}/tests/integration
+          cat <<EOF > integration_config.yml
+          tenable_access_key: ${{ secrets.TENABLE_ACCESS_KEY }}
+          tenable_secret_key: ${{ secrets.TENABLE_SECRET_KEY }}
+          EOF
+
+      - name: Run api integration tests and excluding the ones that depend on assets
+        run: |
+          . /tmp/venv_${{ matrix.python-version }}_${{ matrix.ansible-version.replace('.', '_') }}/bin/activate
+          excludeList=(
+            "add_agent_to_group/"
+            "create_report/"
+            "get_agent_details/"
+            "get_asset_activity_log/"
+            "get_asset_information/"
+            "get_asset_vulnerability_details/"
+            "get_report_status/"
+            "list_agents_by_group/"
+            "list_asset_vulnerabilities/"
+            "list_asset_vulnerabilities_for_plugin/"
+            "list_tags_for_an_asset/"
+            "rename_agent/"
+            "update_agent_group_name/"
+            "upload_file/"
+            "get_scanner_details/"
+            "launch_scan/"
+            "list_agents/"
+            "stop_scan/"
+            "update_scan/"
+            "add_or_remove_asset_tags/"
+            "get_asset_details/"
+            "create_network/"
+            "delete_network/"
+            "get_network_asset_count/"
+            "get_network_details/"
+            "list_networks/"
+            "list_network_scanners/"
+            "list_assignable_scanners/"
+            "update_network/"
+          )
+          excludeArgs=$(printf " --exclude %s" "${excludeList[@]}")
+          ansible-test integration $excludeArgs -v
+        working-directory: ${{ steps.identify.outputs.collection_path }}

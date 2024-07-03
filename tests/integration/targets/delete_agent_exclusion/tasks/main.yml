@@ -1,0 +1,92 @@
+- name: Create agent exclusion
+  create_agent_exclusion:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    name: "bit_exception"
+    description: "description"
+    schedule:
+      enabled: true
+      starttime: "2024-06-01 00:00:00"
+      endtime: "2024-7-07 23:59:59"
+      timezone: "US/Pacific"
+      rrules:
+        freq: "ONETIME"
+        interval: 1
+        byweekday: "SU"
+        bymonthday: 1
+  register: create_agent_exclusion_response
+
+
+- name: Verify agent exclusion is created
+  ansible.builtin.assert:
+    that:
+      - create_agent_exclusion_response.api_response.status_code == 200
+      - create_agent_exclusion_response.changed
+
+- name: Set fact of the exclusin id 
+  set_fact: 
+    exclusion_uuid: "{{ create_agent_exclusion_response.api_response.data.id }}"
+
+- name: Get agent exclusion details
+  get_agent_exclusion_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    exclusion_id: "{{ exclusion_uuid }}"
+  register: exclusion_details
+
+
+- name: Verify details are received
+  ansible.builtin.assert:
+    that:
+      - exclusion_details.api_response.status_code == 200
+      - exclusion_details.api_response.data.id == create_agent_exclusion_response.api_response.data.id
+
+- name: List agent exclusions
+  list_agent_exclusion:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: list_agent_exclusion_response
+  
+- name: List agent exclusions
+  ansible.builtin.assert:
+    that:
+      - '"exclusions" in list_agent_exclusion_response.api_response.data'
+
+
+- name: Update agent exclusion
+  update_agent_exclusion:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    exclusion_id: "{{ exclusion_uuid }}"
+    name: "Updated exclusion name"
+    description: "Updated description"
+    schedule:
+      enabled: true
+      starttime: "2024-06-01 00:00:00"
+      endtime: "2024-07-07 23:59:59"
+      timezone: "US/Pacific"
+      rrules:
+        freq: "ONETIME"
+        interval: 1
+        byweekday: "SU"
+        bymonthday: 1
+  register: update_agent_exclusion_response
+
+- name: Verify update was made
+  ansible.builtin.assert:
+    that:
+      - update_agent_exclusion_response.api_response.status_code == 200
+      - update_agent_exclusion_response.changed
+
+- name: Delete exclusion
+  delete_agent_exclusion:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    exclusion_id: "{{ create_agent_exclusion_response.api_response.data.id }}"
+  register: exclusion_deletion
+
+- name: Verify deletion was made
+  ansible.builtin.assert:
+    that:
+      - exclusion_deletion.api_response.status_code == 200
+      - exclusion_deletion.changed

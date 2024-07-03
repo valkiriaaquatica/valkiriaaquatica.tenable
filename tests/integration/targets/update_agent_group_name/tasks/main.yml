@@ -1,0 +1,29 @@
+- name: Update the name of an agent 
+  valkiriaaquatica.tenable.update_agent_group_name:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    group_id: "{{ agent_group_id }}"
+    name: "{{ not_good_group_name }}"
+  register: agent_group_rename
+
+- name: Verify agent group name is well changed
+  ansible.builtin.assert:
+    that:
+      - agent_group_rename.api_response.status_code == 200
+      - agent_group_rename.api_response.data.id == agent_group_id
+      - agent_group_rename.api_response.data.name == not_good_group_name
+
+- name: Reveoke agent group name to the good value
+  valkiriaaquatica.tenable.update_agent_group_name:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    group_id: "{{ agent_group_id }}"
+    name: "{{ good_group_name }}"
+  register: agent_group_rename
+
+- name: Verify agent group name is well changed
+  ansible.builtin.assert:
+    that:
+      - agent_group_rename.api_response.status_code == 200
+      - agent_group_rename.api_response.data.id == agent_group_id
+      - agent_group_rename.api_response.data.name == good_group_name

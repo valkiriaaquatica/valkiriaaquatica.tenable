@@ -1,0 +1,29 @@
+- name: List one plugin
+  list_plugins:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    size: 1
+  register: plugin_info
+
+- name: Verify size is received
+  ansible.builtin.assert:
+    that:
+      - plugin_info.api_response.status_code == 200
+      - '"plugin_details" in plugin_info.api_response.data.data'
+      - 'plugin_info.api_response.data.size == 1'
+
+
+- name: List plugins
+  list_plugins:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    page: 3
+  register: plugin_info_2
+
+
+- name: Verify page is received
+  ansible.builtin.assert:
+    that:
+      - plugin_info_2.api_response.status_code == 200
+      - '"plugin_details" in plugin_info_2.api_response.data.data'
+      - 'plugin_info_2.api_response.data.params.page == 3'

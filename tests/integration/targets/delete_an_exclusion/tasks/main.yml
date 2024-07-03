@@ -1,0 +1,35 @@
+- block:
+    - name: Create a exclusion 
+      create_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "exception_test_name"
+        members: "192.168.1.99, 192.168.1.100"
+      register: exclusion_creation
+
+    - name: Verify exclusion was well created
+      ansible.builtin.assert:
+        that:
+          - exclusion_creation.api_response.status_code == 200
+          - exclusion_creation.changed
+          - 'exclusion_creation.api_response.data.name == "exception_test_name"'
+
+    - name: Get exclusion id
+      ansible.builtin.set_fact:
+        exclusion_id_response: "{{ exclusion_creation.api_response.data.id }}"
+
+  always:
+    - name: Delete the exclusion
+      delete_an_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id_response }}"
+      when: exclusion_id_response is defined
+      register: delete_exclusion
+
+
+    - name: Verify exclusion was deleted
+      ansible.builtin.assert:
+        that:
+          - delete_exclusion.api_response.status_code == 200
+      when: delete_exclusion.changed

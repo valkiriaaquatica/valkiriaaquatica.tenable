@@ -1,0 +1,12 @@
+- name: List plugin in families
+  list_plugins_in_family_name:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    name: "Windows : User management"
+  register: response
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response.api_response.status_code == 200
+      - response.changed

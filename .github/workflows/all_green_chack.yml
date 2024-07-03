@@ -1,0 +1,41 @@
+---
+name: all_green
+
+on:
+  push: # run on every push on folliwing branches
+    branches:
+      - main
+      - stable-1.x
+      - devel
+      - dev
+      # run on all prs
+  pull_request:
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{
+      github.event.pull_request.number || github.sha
+    }}
+  cancel-in-progress: true
+
+jobs:
+  linters:
+    uses: ./.github/workflows/linters.yml # use the callable linters job to run tests
+  sanity:
+    uses: ./.github/workflows/sanity.yml # use the callable sanity job to run tests
+  units:
+    uses: ./.github/workflows/units.yml # use the callable units job to run tests
+  all_green:
+    if: ${{ always() }}
+    needs:
+      - linters
+      - sanity
+      - units
+    runs-on: ubuntu-latest
+    steps:
+      - run: >-
+          python -c "assert set([
+          '${{ needs.linters.result }}',
+          '${{ needs.sanity.result }}',
+          '${{ needs.units.result }}'
+          ]) == {'success'}"

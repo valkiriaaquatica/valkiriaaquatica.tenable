@@ -1,0 +1,71 @@
+- block:
+    - name: Create agent group
+      create_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "agent_group_creation"
+      register: agent_group_creation_response
+
+
+    - name: Verify the group is well created
+      ansible.builtin.assert:
+        that:
+          - agent_group_creation_response.api_response.status_code == 200
+          - agent_group_creation_response.changed
+          - 'agent_group_creation_response.api_response.data.name == "agent_group_creation"'
+
+    - name: Get agent id that was just created
+      set_fact:
+        agent_group_id_created: "{{ agent_group_creation_response.api_response.data.uuid }}"
+
+
+    - name: Create a scan
+      create_scan:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        uuid: "{{ template_scan_uuid }}"
+        settings:
+          name: "name_scan_creation"
+          agent_group_id: "{{ agent_group_id_created }}"
+      register: scan_creation
+
+
+    - name: Verify the scan is well created
+      ansible.builtin.assert:
+        that:
+          - scan_creation.api_response.status_code == 200
+          - scan_creation.changed
+          - 'scan_creation.api_response.data.scan.name == "name_scan_creation"'
+
+    - name: Get scan id that was just created
+      set_fact:
+        scan_id_creation: "{{ scan_creation.api_response.data.scan.id }}"
+
+  always:
+    - name: Delete agent group that was just created
+      valkiriaaquatica.tenable.delete_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id_created }}"
+      when: agent_group_id_created is defined
+      register: agent_group_deletation
+
+    - name: Verify the group is deleted
+      ansible.builtin.assert:
+        that:
+          - agent_group_deletation.api_response.status_code == 200
+      when: agent_group_deletation.changed
+  
+    - name: Delete the scan
+      delete_scan:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        scan_id: "{{ scan_id_creation }}"
+      when: scan_id_creation is defined
+      register: scan_deletion
+
+    - name: Verify the scan is deleted
+      ansible.builtin.assert:
+        that:
+          - scan_deletion.api_response.status_code == 200
+      when: scan_deletion.changed

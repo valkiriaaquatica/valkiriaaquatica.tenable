@@ -1,0 +1,12 @@
+- name: List tag categories using enviroment creds
+  list_tag_categories:
+      access_key: "{{ tenable_access_key }}"
+      secret_key: "{{ tenable_secret_key }}"
+      limit: 1
+  register: tag_categories
+  
+- name: Verify list categories is received and with limit 1
+  ansible.builtin.assert:
+    that:
+      - tag_categories.api_response.status_code == 200
+      - 'tag_categories.api_response.data.pagination.limit == 1'

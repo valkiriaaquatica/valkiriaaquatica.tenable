@@ -1,0 +1,11 @@
+- name: Get all assets  with their vulnerabilties
+  valkiriaaquatica.tenable.list_asset_with_vulnerabilities:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_assets_and_vulns
+
+- name: Verify all assets list is well recevied
+  ansible.builtin.assert:
+    that:
+      - all_assets_and_vulns.api_response.status_code == 200
+      - '"assets" in all_assets_and_vulns.api_response.data'

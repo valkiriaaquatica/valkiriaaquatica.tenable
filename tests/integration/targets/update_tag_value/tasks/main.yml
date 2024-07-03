@@ -1,0 +1,128 @@
+- block:
+    - name: Create tag ceategory
+      create_tag_category:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "ansible_collection_tag_category"
+      register: tag_category_creation_response
+
+
+    - name: Verify tag is created
+      ansible.builtin.assert:
+        that:
+          - tag_category_creation_response.api_response.status_code == 200
+          - tag_category_creation_response.changed
+          - 'tag_category_creation_response.api_response.data.name == "ansible_collection_tag_category"'
+
+    - name: Get id of the tag category
+      set_fact:
+        tag_category_uuid: "{{ tag_category_creation_response.api_response.data.uuid }}"
+
+    - name: Get name of the tag category
+      set_fact:
+        tag_category_name: "{{ tag_category_creation_response.api_response.data.name }}"
+
+    - name: Create tag value
+      create_tag_value:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        value: "tag_value"
+        category_name: "{{ tag_category_name }}"
+        category_uuid: "{{ tag_category_uuid }}"
+      register: tag_value_creation
+
+    - name: Verify tag value is created
+      ansible.builtin.assert:
+        that:
+          - tag_value_creation.api_response.status_code == 200
+          - tag_value_creation.changed
+          - tag_value_creation.api_response.data.category_uuid == tag_category_uuid
+
+    - name: Get the uuid of the tag value just created
+      set_fact:
+        tag_value_uuid: "{{ tag_value_creation.api_response.data.uuid }}"
+
+    - name: Update tag value  # no filters applied in case no isntances available
+      update_tag_value:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        value_uuid: "{{ tag_value_uuid }}"
+        value: "this_is_the_new_value"
+      register: tag_value_update
+
+    - name: Verify update tag value was well done
+      ansible.builtin.assert:
+        that:
+          - tag_value_update.api_response.status_code == 200
+          - tag_value_update.changed
+          - tag_value_update.api_response.data.category_uuid == tag_category_uuid
+
+
+    - name: Delete tag value 
+      delete_tag_value:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        value_uuid: "{{ tag_value_uuid }}"
+      when: tag_value_uuid
+      register: tag_value_deletion
+
+    - name: Verify tag value is deleted
+      ansible.builtin.assert:
+        that:
+          - tag_value_deletion.api_response.status_code == 200
+      when: tag_value_deletion.changed
+
+    # second value to proof filters
+    #- name: Create tag value
+     # create_tag_value:
+      #  access_key: "{{ tenable_access_key }}"
+       # secret_key: "{{ tenable_secret_key }}"
+       # value: "tag_value_2"
+        #category_name: "{{ tag_category_name }}"
+        #filters:
+         # asset:
+          #  and:
+           #   - field: aws_ec2_name
+            #    operator: eq
+             #   value: "asset"
+      #register: tag_value_creation_2
+
+    #- name: Verify tag value is created
+     # ansible.builtin.assert:
+      #  that:
+       #   - tag_value_creation_2.api_response.status_code == 200
+        #  - tag_value_creation_2.changed
+         # - tag_value_creation_2.api_response.data.category_uuid == tag_category_uuid
+
+    #- name: Get name of the tag uuid of the tag value just created
+     # set_fact:
+      #  tag_value_uuid_2: "{{ tag_value_creation_2.api_response.data.uuid }}"
+
+  always:
+    #- name: Delete tag value 
+     # delete_tag_value:
+      #  access_key: "{{ tenable_access_key }}"
+       # secret_key: "{{ tenable_secret_key }}"
+        #value_uuid: "{{ tag_value_uuid_2 }}"
+      #when: tag_value_uuid_2 is defined
+      #register: tag_value_deletion_2
+
+    #- name: Verify tag value is deleted
+     # ansible.builtin.assert:
+      #  that:
+       #   - tag_value_deletion_2.api_response.status_code == 200
+      #when: tag_value_deletion_2.changed
+
+    - name: Delete tag category 
+      delete_tag_category:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        category_uuid: "{{ tag_category_uuid }}"
+      when: tag_category_uuid is defined
+      register: tag_deletion
+
+    - name: Verify tag category is deleted
+      ansible.builtin.assert:
+        that:
+          - tag_deletion.api_response.status_code == 200
+      when: tag_deletion.changed

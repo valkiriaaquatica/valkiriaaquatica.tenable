@@ -1,0 +1,35 @@
+- name: List assets with one filter
+  list_assets:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters: 
+      - type: aws_ec2_instance_type
+        operator: eq
+        value: "t2.small"
+  register: asset_with_two_filters
+
+
+- name: Verify asset is received
+  ansible.builtin.assert:
+    that:
+      - asset_with_two_filters.api_response.status_code == 200
+      - '"assets" in asset_with_two_filters.api_response.data'
+
+- name: Get an asset from aws instance id
+  list_assets:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters: 
+      - type: aws_ec2_instance_type
+        operator: eq
+        value: "t2.small"
+      - type: aws_availability_zone
+        operator: neq
+        value: "ap-northeast-2a"
+  register: asset_aws
+
+- name: Verify asset is received
+  ansible.builtin.assert:
+    that:
+      - asset_aws.api_response.status_code == 200
+      - '"assets" in asset_aws.api_response.data'

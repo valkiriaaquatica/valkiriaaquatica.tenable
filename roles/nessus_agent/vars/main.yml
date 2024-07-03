@@ -1,0 +1,9 @@
+---
+# vars file for roles
+tenable_host: "your_secret_host"
+tenable_port: "your_tenable_port"
+tenable_group: "your_tenable_group"
+tenable_network: "your_tenable_network"
+linking_key: "your_linking_key"
+tenable_access_key: "your_access_key"
+tenable_secret_key: "your_secret_key"

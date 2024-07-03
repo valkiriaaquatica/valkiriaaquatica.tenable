@@ -1,0 +1,8 @@
+name: CI for Sanity Checks of ansible-test sanity
+
+on: [workflow_call] # allow this workflow to be called from other workflows
+
+jobs:
+  sanity:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    uses: ansible-network/github_actions/.github/workflows/sanity.yml@main

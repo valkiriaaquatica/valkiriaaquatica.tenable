@@ -1,0 +1,61 @@
+- block:
+    - name: Create agent group
+      create_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "agent_group_creation"
+      register: agent_group_creation_response
+
+    - name: Verify the group is well created
+      ansible.builtin.assert:
+        that:
+          - agent_group_creation_response.api_response.status_code == 200
+          - agent_group_creation_response.changed
+          - 'agent_group_creation_response.api_response.data.name == "agent_group_creation"'
+
+    - name: Get agent id that was just created
+      set_fact:
+        agent_group_id_created: "{{ agent_group_creation_response.api_response.data.id }}"
+
+    - name: Get agents from specified group
+      valkiriaaquatica.tenable.get_agent_group_details:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id_created }}"
+        wildcard_text: test
+        limit: 1
+      register: agents_test
+
+    - name: Verify agents are well reeived
+      ansible.builtin.assert:
+        that:
+          - agents_test.api_response.status_code == 200
+          - agents_test.api_response.data.pagination.limit == 1
+
+    - name: Get agents from group filtering
+      valkiriaaquatica.tenable.get_agent_group_details:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id_created }}"
+      register: agents_linux
+
+
+    - name: Verify agents are well reeived
+      ansible.builtin.assert:
+        that:
+          - agents_test.api_response.status_code == 200
+
+  always:
+    - name: Delete agent group that was just created
+      valkiriaaquatica.tenable.delete_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id_created }}"
+      when: agent_group_id_created is defined
+      register: agent_group_deletation
+
+    - name: Verify the group is deleted
+      ansible.builtin.assert:
+        that:
+          - agent_group_deletation.api_response.status_code == 200
+      when: agent_group_deletation.changed

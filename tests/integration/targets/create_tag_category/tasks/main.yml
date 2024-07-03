@@ -1,0 +1,35 @@
+- block:
+    - name: Create tag ceategory
+      create_tag_category:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "ansible_collection_tag_category"
+      register: tag_category_creation_response
+
+
+    - name: Verify tag is created
+      ansible.builtin.assert:
+        that:
+          - tag_category_creation_response.api_response.status_code == 200
+          - tag_category_creation_response.changed
+          - 'tag_category_creation_response.api_response.data.name == "ansible_collection_tag_category"'
+
+    - name: Get id of the tag category
+      set_fact:
+        tag_category_uuid: "{{ tag_category_creation_response.api_response.data.uuid }}"
+
+  always:
+    - name: Delete tag category 
+      delete_tag_category:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        category_uuid: "{{ tag_category_uuid }}"
+      when: tag_category_uuid is defined
+      register: tag_deletion
+
+
+    - name: Verify tag is deleted
+      ansible.builtin.assert:
+        that:
+          - tag_deletion.api_response.status_code == 200
+      when: tag_deletion.changed

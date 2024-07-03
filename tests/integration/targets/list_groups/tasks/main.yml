@@ -1,0 +1,12 @@
+- name: List all groups
+  list_groups:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_groups
+
+- name: Verify all groups info are received
+  ansible.builtin.assert:
+    that:
+      - all_groups.api_response.status_code == 200
+      - '"groups" in all_groups.api_response.data'
+      - '"container_uuid" in all_groups.api_response.data.groups[0]'

@@ -1,0 +1,12 @@
+- name: List plugin in families
+  list_plugin_in_familiy_id:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    id: 56
+  register: response
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response.api_response.status_code == 200
+      - response.api_response.data.id == 56

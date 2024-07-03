@@ -1,0 +1,53 @@
+- name: List all agents
+  list_agents:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_agents
+
+- name: Verify agents resposne is correct
+  ansible.builtin.assert:
+    that:
+      - all_agents.api_response.status_code == 200
+      - '"agents" in all_agents.api_response.data'
+
+- name: List all agents that in their ip contain 192.168.
+  list_agents:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    wildcard_text: 192.168.
+    wildcard_fields: ip
+    limit: 1
+  register: agents_ip
+
+- name: Verify the are agents with 192.168 in their ip
+  ansible.builtin.assert:
+    that:
+      - agents_ip.api_response.status_code == 200
+      - '"agents" in agents_ip.api_response.data'
+      - '"192.168." in agents_ip.api_response.data.agents[0].ip'
+
+- name: List agents with specified filters and wildcard using env variables
+  list_agents:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: core_version
+        operator: match
+        value: 10.4.4
+      - type: platform
+        operator: eq
+        value: LINUX
+      - type: groups
+        operator: eq
+        value: 127110
+    limit: 1
+  register: multiple_filters_agents
+
+- name: Verify multiple filters
+  ansible.builtin.assert:
+    that:
+      - multiple_filters_agents.api_response.status_code == 200
+      - '"agents" in multiple_filters_agents.api_response.data'
+      - 'multiple_filters_agents.api_response.data.agents[0].core_version == "10.4.4"'
+      - 'multiple_filters_agents.api_response.data.agents[0].platform == "LINUX"'
+      - 'multiple_filters_agents.api_response.data.agents[0].groups[0].id == 127110'

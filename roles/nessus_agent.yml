@@ -1,0 +1,6 @@
+# tasks file for roles
+- name: Download, install and Link Tenable Nesuss Agent
+  gather_facts: true 
+  hosts: windows
+  roles:
+    - { role: nesuss_agent, tags: nesuss_agent } 

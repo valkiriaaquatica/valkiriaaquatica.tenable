@@ -1,0 +1,14 @@
+- name: Rename agent
+  valkiriaaquatica.tenable.rename_agent:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    agent_id: "{{ agent_id }}"
+    name: "new_name"
+  register: rename_agent
+
+- name: Verify rename agent was succesfull
+  ansible.builtin.assert:
+    that:
+      - rename_agent.api_response.status_code == 200
+      - rename_agent.changed
+      - 'rename_agent.api_response.data.id == {{ agent_id }}'

@@ -1,0 +1,82 @@
+- block:
+    - name: Create an exclusion 
+      create_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "exception_test_name"
+        members: "192.168.1.99, 192.168.1.100"
+        schedule: 
+          enabled: true
+          starttime: "2021-04-01 09:00:00"
+          endtime: "2021-04-01 17:00:00"
+          timezone: "America/New_York"
+          rrules:
+            freq: "WEEKLY"
+            interval: 1
+            byweekday: "MO,TU,WE,TH,FR"
+        #network_id: "{{ network_uuid_test }}"
+      register: exclusion_creation
+
+    - name: Verify exclusion was well created
+      ansible.builtin.assert:
+        that:
+          - exclusion_creation.api_response.status_code == 200
+          - exclusion_creation.changed
+          - 'exclusion_creation.api_response.data.name == "exception_test_name"'
+          - exclusion_creation.api_response.data.schedule.enabled == true
+
+    - name: Get exclusion id
+      ansible.builtin.set_fact:
+        exclusion_id: "{{ exclusion_creation.api_response.data.id }}"
+
+    - name: Get information of an exclusion using environment keys
+      get_exclusion_details:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id }}"
+      register: exclusion_details_response
+
+    - name: Verify exclusion details are received
+      ansible.builtin.assert:
+        that:
+          - exclusion_details_response.api_response.status_code == 200
+
+    - name: Update an exclusion
+      valkiriaaquatica.tenable.update_an_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id }}"
+        name: "test_exclusion_ansible"
+        description: "I am the exclusion"
+        members: "2.5.8.6"
+        schedule: 
+          enabled: true
+          starttime: "2024-04-01 09:00:00"
+          endtime: "2024-04-01 17:00:00"
+          timezone: "America/New_York"
+          rrules:
+            freq: "WEEKLY"
+            interval: 1
+            byweekday: "MO,TU,WE,TH,FR"
+      register: update_an_exclusion_response
+
+    - name: Verify update exclusion was updated
+      ansible.builtin.assert:
+        that:
+          - update_an_exclusion_response.api_response.status_code == 200
+          - update_an_exclusion_response.changed
+
+  always:
+    - name: Ensure exclusion is deleted
+      delete_an_exclusion:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        exclusion_id: "{{ exclusion_id | default('') }}"
+      when: exclusion_id is defined
+      register: exclusion_deleted_always
+
+    - name: Verify exclusion is deleted
+      ansible.builtin.assert:
+        that:
+          - exclusion_deleted_always.api_response.status_code == 200
+          - exclusion_deleted_always.changed

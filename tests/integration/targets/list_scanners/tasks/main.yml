@@ -1,0 +1,11 @@
+- name: list scanners
+  list_scanners:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: list_scanners
+
+- name: Verify all scanners is well returned
+  ansible.builtin.assert:
+    that:
+      - list_scanners.api_response.status_code == 200
+      - '"scanners" in list_scanners.api_response.data'

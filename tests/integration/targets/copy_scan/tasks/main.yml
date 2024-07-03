@@ -1,0 +1,96 @@
+- block:
+    - name: Create folder
+      create_folder:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "ansible_collection_folder"
+      register: create_folder_response
+
+    - name: Verify creation was successful
+      ansible.builtin.assert:
+        that:
+          - create_folder_response.api_response.status_code == 200
+          - create_folder_response.changed
+
+    - name: Get folder id
+      set_fact:
+        folder_id_creation: "{{ create_folder_response.api_response.data.id }}"
+
+    - name: Create agent group
+      create_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "agent_group_name"
+      register: agent_group_creation_response
+
+    - name: Verify the group is well created
+      ansible.builtin.assert:
+        that:
+          - agent_group_creation_response.api_response.status_code == 200
+          - agent_group_creation_response.changed
+          - 'agent_group_creation_response.api_response.data.name == "agent_group_name" '
+
+    - name: Get agent id that was just created
+      set_fact:
+        agent_group_id_created: "{{ agent_group_creation_response.api_response.data.uuid }}"
+
+    - name: Create a scan
+      create_scan:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        uuid: "{{ template_scan_uuid }}"
+        settings:
+          name: "name_scan_creation_creation"
+          agent_group_id: "{{ agent_group_id_created }}"
+      register: scan_creation
+
+    - name: Verify the scan is well created
+      ansible.builtin.assert:
+        that:
+          - scan_creation.api_response.status_code == 200
+          - scan_creation.changed
+          - 'scan_creation.api_response.data.scan.name == "name_scan_creation_creation"'
+
+    - name: Get scan id that was just created
+      set_fact:
+        scan_id_creation: "{{ scan_creation.api_response.data.scan.id }}"
+
+    - name: Copy scan
+      copy_scan:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        scan_id: "{{ scan_id_creation }}"
+        folder_id: "{{ folder_id_creation }}"
+        name: "new scan"
+      register: copy_scan_response
+
+    - name: Verify the scan is copied
+      ansible.builtin.assert:
+        that:
+          - copy_scan_response.api_response.status_code == 200
+          - copy_scan_response.changed
+
+  always:
+    - name: Ensure agent group is deleted
+      valkiriaaquatica.tenable.delete_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id_created | default('') }}"
+      when: agent_group_id_created is defined
+      register: agent_group_deleted_always
+
+    - name: Ensure the scan is deleted
+      delete_scan:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        scan_id: "{{ scan_id_creation | default('') }}"
+      when: scan_id_creation is defined
+      register: scan_deleted_always
+
+    - name: Ensure the folder is deleted
+      delete_folder:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        folder_id: "{{ folder_id_creation | default('') }}"
+      when: folder_id_creation is defined
+      register: folder_deleted_always

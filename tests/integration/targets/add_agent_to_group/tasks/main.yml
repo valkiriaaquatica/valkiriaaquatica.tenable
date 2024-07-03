@@ -1,0 +1,75 @@
+- block:
+    - name: Create agent group
+      create_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "agent_group_creation"
+      register: agent_group_creation_response
+
+    - name: Verify the group is well created
+      ansible.builtin.assert:
+        that:
+          - agent_group_creation_response.api_response.status_code == 200
+          - agent_group_creation_response.changed
+          - 'agent_group_creation_response.api_response.data.name == "agent_group_creation"'
+
+    - name: Get agent id that was just created
+      set_fact:
+        agent_group_id: "{{ agent_group_creation_response.api_response.data.id }}"
+
+    - name: Add agent to a agent group
+      add_agent_to_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id }}"
+        agent_id: "{{ agent_id }}" # fix agent
+      register: add_agent
+
+    - name: Verify agent details is received
+      ansible.builtin.assert:
+        that:
+          - add_agent.api_response.status_code == 200
+          - add_agent.changed
+
+    - name: Check if agent exists in agent group
+      get_agent_details:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        agent_id: "{{ agent_id }}"
+      register: agent_details
+
+    - name: Verify if agent exists in group
+      ansible.builtin.assert:
+        that:
+          - agent_details.api_response.status_code == 200
+          - agent_details.api_response.data.groups | selectattr('id', 'eq', agent_group_id | int) | list | length > 0
+
+  always:
+    - name: Remove agent from group that just created
+      valkiriaaquatica.tenable.remove_agent_from_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id }}"
+        agent_id: "{{ agent_id }}"
+      when: agent_id is defined 
+      register: remove_agent
+
+    - name: Verify agent is well removed
+      ansible.builtin.assert:
+        that:
+          - remove_agent.api_response.status_code == 200
+      when: remove_agent.changed
+
+    - name: Delete agent group that was just created
+      valkiriaaquatica.tenable.delete_agent_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ agent_group_id }}"
+      when: agent_group_id is defined
+      register: agent_group_deletation
+
+    - name: Verify the group is deleted
+      ansible.builtin.assert:
+        that:
+          - agent_group_deletation.api_response.status_code == 200
+      when: agent_group_deletation.changed

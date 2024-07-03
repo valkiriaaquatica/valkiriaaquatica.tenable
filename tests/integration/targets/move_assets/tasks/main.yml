@@ -1,0 +1,48 @@
+- name: Get asset details
+  get_asset_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    asset_uuid: "{{ asset_to_test_with_uuid }}"
+  register: asset_details
+
+
+- name: Verify asset details is received
+  ansible.builtin.assert:
+    that:
+      - asset_details.api_response.status_code == 200
+      - asset_details.api_response.data.id == asset_to_test_with_uuid
+
+
+- name: Set value of actual network
+  set_fact: 
+    actual_network_uuid: "{{ asset_details.api_response.data.network_id }}"
+
+- name: Move asset
+  move_assets:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    targets: "{{ asset_to_test_with_ip }}"
+    source: "{{ actual_network_uuid  }}"
+    destination: "{{ network_id }}"
+  register: move_assets_change
+
+- name: Verify asset network changed
+  ansible.builtin.assert:
+    that:
+      - move_assets_change.api_response.status_code == 202
+      - move_assets_change.changed
+  
+- name: Get asset details
+  get_asset_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    asset_uuid: "{{ asset_to_test_with_uuid }}"
+  register: asset_details_two
+
+
+- name: Verify asset details is received
+  ansible.builtin.assert:
+    that:
+      - asset_details_two.api_response.status_code == 200
+      - asset_details_two.api_response.data.id == asset_to_test_with_uuid
+      - asset_details_two.api_response.data.network_id[0] == network_id

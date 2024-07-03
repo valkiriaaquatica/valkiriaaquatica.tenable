@@ -1,0 +1,16 @@
+- name: List agents by group wiht enviroment creentials
+  list_agents_by_group:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    agent_group_id: "{{ agent_group_id }}"
+    filters:
+      - type: core_version
+        operator: match
+        value: "10.6.2"
+  register: agents_filtered
+
+- name: Verify agent group is well filtered
+  ansible.builtin.assert:
+    that:
+      - agents_filtered.api_response.status_code == 200
+      - 'agents_filtered.api_response.data.agents[0].core_version == "10.6.2"'

@@ -1,0 +1,12 @@
+---
+- name: Get all folders
+  list_folders:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_folders
+
+- name: Verify folders are received
+  ansible.builtin.assert:
+    that:
+      - all_folders.api_response.status_code == 200
+      - '"folders" in all_folders.api_response.data'

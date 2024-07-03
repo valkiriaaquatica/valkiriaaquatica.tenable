@@ -1,0 +1,49 @@
+- name: Create a network  
+  create_network:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    name: "ansible_collection_network"
+    description: "this is the descritpion"
+    assets_ttl_days: 50
+  register: network_creation
+
+- name: Verify network was well created
+  ansible.builtin.assert:
+    that:
+      - network_creation.api_response.status_code == 200
+      - network_creation.changed
+      - network_creation.api_response.data.assets_ttl_days == 50
+      - network_creation.api_response.data.description == "this is the descritpion"
+      - network_creation.api_response.data.name == "ansible_collection_network"
+
+- name: Get network uuid
+  ansible.builtin.set_fact:
+    network_creation_uuid: "{{ network_creation.api_response.data.uuid }}"
+
+- name: Update a network  
+  valkiriaaquatica.tenable.update_network:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    network_id: "{{ network_creation_uuid }}"
+    name: "new_network_name"
+  register: udpate_network
+
+- name: Verify network was updated
+  ansible.builtin.assert:
+    that:
+      - udpate_network.api_response.status_code == 200
+      - udpate_network.changed
+      - udpate_network.api_response.data.name == "new_network_name"
+
+- name: Delete a network  
+  delete_network:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    network_id: "{{ network_creation_uuid }}"
+  register: network_deleted
+  
+- name: Verify network was deleted
+  ansible.builtin.assert:
+    that:
+      - network_deleted.api_response.status_code == 200
+      - network_deleted.changed

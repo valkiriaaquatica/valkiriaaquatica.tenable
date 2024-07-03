@@ -1,0 +1,16 @@
+---
+- name: Download, install and configure nessus agent in Debian distros.
+  import_tasks: ubuntu.yml
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Download, install and configure nessus agent in RedHat distros.
+  import_tasks: rhel.yml
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Download, install and configure nessus agent in Suse distros.
+  import_tasks: suse.yml
+  when: ansible_facts['os_family'] == 'Suse'
+
+- name: Download, install and configure nessus agent in Windows distros.
+  import_tasks: windows.yml
+  when: ansible_facts['os_family'] == 'Windows'

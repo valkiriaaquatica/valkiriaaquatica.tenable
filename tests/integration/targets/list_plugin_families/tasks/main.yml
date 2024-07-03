@@ -1,0 +1,25 @@
+- name: List all plugin families
+  list_plugin_families:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    all: True
+  register: response
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response.changed == false
+      - response.failed == false
+
+- name: List not all plugin families
+  list_plugin_families:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    all: False
+  register: response_2
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response_2.api_response.status_code == 200
+      - '"families" in response_2.api_response.data'

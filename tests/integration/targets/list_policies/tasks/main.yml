@@ -1,0 +1,11 @@
+- name: List all policies in Tenable
+  list_policies:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: response_policies
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response_policies.api_response.status_code == 200
+      - '"policies" in response_policies.api_response.data'

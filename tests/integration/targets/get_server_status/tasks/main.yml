@@ -1,0 +1,10 @@
+- name: Get server status
+  get_server_status:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: get_server_status_response
+
+- name: Verify the response is ok
+  ansible.builtin.assert:
+    that:
+      - get_server_status_response.api_response.status_code == 200

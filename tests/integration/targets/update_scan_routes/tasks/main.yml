@@ -1,0 +1,58 @@
+- block:
+    - name: Create a new scanner group with default type
+      create_scanner_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        name: "Example Group"
+        type: "load_balancing"
+      register: create_scanner_group_response
+
+    - name: Verify the scanner group is well created
+      ansible.builtin.assert:
+        that:
+          - create_scanner_group_response.changed
+
+    - name: Set fact of scanner grup
+      set_fact:
+        scanner_group_id: "{{ create_scanner_group_response.api_response.data.id }}"
+
+    - name: Get details of a scanner group
+      list_scanner_group_details:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ scanner_group_id }}"
+      register: list_scanner_group_details_response
+
+    - name: Verify details are received
+      ansible.builtin.assert:
+        that:
+          - list_scanner_group_details_response.api_response.data.id == scanner_group_id|int
+
+    - name: Update scan routes for a scanner group
+      update_scan_routes:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ scanner_group_id }}"
+        routes:
+          - "example.com"
+      register: update_scan_routes_response
+
+    - name: Verify scan routes response
+      ansible.builtin.assert:
+        that:
+          - update_scan_routes_response.api_response.status_code == 200
+          - update_scan_routes_response.changed
+  always:
+    - name: Delete a scanner group
+      delete_scanner_group:
+        access_key: "{{ tenable_access_key }}"
+        secret_key: "{{ tenable_secret_key }}"
+        group_id: "{{ scanner_group_id }}"
+      when: scanner_group_id is defined
+      register: delete_scanner_group_response
+
+    - name: Verify the scanner group is deleted
+      ansible.builtin.assert:
+        that:
+          - delete_scanner_group_response.changed
+      when: delete_scanner_group_response.changed

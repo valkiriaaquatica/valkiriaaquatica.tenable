@@ -1,0 +1,62 @@
+---
+- name: List all networks with any filters passing acces and secret key 
+  list_networks:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: all_networks
+
+- name: Verify all networks list is well recevied
+  ansible.builtin.assert:
+    that:
+      - all_networks.api_response.status_code == 200
+      - '"networks" in all_networks.api_response.data'
+
+- name: List network with name filter
+  list_networks:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: "name"
+        operator: "eq"
+        value: "{{ network_name }}"
+    include_deleted: false
+  register: filtered_network
+
+- name: Verificar la respuesta de redes filtradas
+  ansible.builtin.assert:
+    that:
+      - all_networks.api_response.status_code == 200
+      - '"networks" in all_networks.api_response.data'
+      - 'filtered_network.api_response.data.networks[0].name == network_name'
+
+- name: Get Netowkr uuid
+  ansible.builtin.set_fact:
+    network_uuid: "{{ filtered_network.api_response.data.networks[0].uuid }}"
+
+
+- name: Get network details of the network above
+  get_network_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    network_id: "{{ network_uuid }}"
+
+
+- name: Use two filters to get two networks
+  list_networks:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: name
+        operator: eq
+        value: "{{ network_name }}"
+      - type: name
+        operator: eq 
+        value: "{{ second_network_name }}"
+
+
+- name: Verificar la respuesta de redes filtradas
+  ansible.builtin.assert:
+    that:
+      - all_networks.api_response.status_code == 200
+      - '"networks" in all_networks.api_response.data'
+      - 'all_networks.api_response.data.networks[0].name == network_name'

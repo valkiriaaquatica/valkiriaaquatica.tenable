@@ -1,0 +1,25 @@
+- name: Get scan count
+  get_scan_count:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    active: True
+  register: get_scan_count_response
+
+- name: Verify the scan count response
+  ansible.builtin.assert:
+    that:
+      - get_scan_count_response.api_response.status_code == 200
+      - '"count" in get_scan_count_response.api_response.data'
+
+- name: Get scan count
+  get_scan_count:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    active: False
+  register: get_scan_count_response_two
+
+- name: Verify the scan count response
+  ansible.builtin.assert:
+    that:
+      - get_scan_count_response_two.api_response.status_code == 200
+      - '"count" in get_scan_count_response_two.api_response.data'

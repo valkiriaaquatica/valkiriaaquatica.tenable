@@ -1,0 +1,10 @@
+coverage==4.5.4
+flake8
+mock
+pytest-xdist
+# We should avoid these two modules with py3
+pytest-mock
+pytest-forked
+mock
+tox
+pytest-ansible

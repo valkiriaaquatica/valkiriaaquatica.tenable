@@ -1,0 +1,13 @@
+- name: Get agent details
+  get_agent_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    agent_id: "{{ agent_id }}"
+  register: agent_details
+
+
+- name: Verify agent details is received
+  ansible.builtin.assert:
+    that:
+      - agent_details.api_response.status_code == 200
+      - 'agent_details.api_response.data.id == agent_id'

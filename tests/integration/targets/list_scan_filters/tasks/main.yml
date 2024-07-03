@@ -1,0 +1,11 @@
+- name: List scan filters
+  list_scan_filters:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: response
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response.api_response.status_code == 200
+      - '"filters" in response.api_response.data'

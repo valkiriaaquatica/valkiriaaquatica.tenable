@@ -1,0 +1,37 @@
+- name: List vulnerabilities
+  list_vulnerabilities:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    date_range: 2
+    filters:
+      - type: plugin.attributes.vpr.score
+        operator: eq
+        value: "5"
+  register: list_vulnerabilities_response
+    
+
+- name: Verify list vulns response
+  ansible.builtin.assert:
+    that:
+      - list_vulnerabilities_response.api_response.status_code == 200
+
+- name: List vulnerabilities
+  list_vulnerabilities:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    date_range: 2
+
+    filters:
+      - type: plugin.attributes.vpr.score
+        operator: eq
+        value: "5"
+      - type: tracking.state
+        operator: neq
+        value: "Fixed"
+  register: list_vulnerabilities_response
+
+
+- name: Verify list vulns response
+  ansible.builtin.assert:
+    that:
+      - list_vulnerabilities_response.api_response.status_code == 200

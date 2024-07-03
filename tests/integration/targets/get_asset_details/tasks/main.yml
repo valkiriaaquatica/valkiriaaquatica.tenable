@@ -1,0 +1,13 @@
+- name: Get asset details
+  get_asset_details:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    asset_uuid: "asset_id_with_vulns"
+  register: asset_details
+
+
+- name: Verify asset details is received
+  ansible.builtin.assert:
+    that:
+      - asset_details.api_response.status_code == 200
+      - 'asset_details.api_response.data.id == asset_id_with_vulns'

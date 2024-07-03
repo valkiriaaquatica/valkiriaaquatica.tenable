@@ -1,0 +1,12 @@
+- name: List tags for an asset
+  list_tags_for_an_asset:
+      access_key: "{{ tenable_access_key }}"
+      secret_key: "{{ tenable_secret_key }}"
+      asset_uuid: "{{ asset_uuid }}"
+  register: asset_tags
+  
+- name: Verify list categories is received and with limit 1
+  ansible.builtin.assert:
+    that:
+      - asset_tags.api_response.status_code == 200
+      - 'asset_tags.api_response.data.tags[0].asset_uuid == asset_uuid'

@@ -1,0 +1,72 @@
+# tested on suse 15 and suse 12
+
+- name: Download Nessus Agent package in local machine
+  valkiriaaquatica.tenable.download_nessus_agent:
+    os_distribution: "{{ ansible_facts['distribution'] }}"
+    os_version: "{{ ansible_facts['distribution_major_version'] }}"
+    dest: "/tmp/"
+  register: nessu_agent_download
+  delegate_to: localhost
+  tags: download
+
+- name: Get the package name just downloaded
+  ansible.builtin.set_fact:
+    nessus_agent_filename: "{{ nessu_agent_download.filename }}"
+  delegate_to: localhost
+
+- name: Copy the package package to the remote host 
+  copy:
+    src: "/tmp/{{ nessus_agent_filename }}"
+    dest: "/tmp/{{ nessus_agent_filename }}"
+
+- name: Install nessus agent in Suse
+  become: true
+  zypper:
+    name: "/tmp/{{ nessus_agent_filename }}"
+    state: present
+    disable_gpg_check: yes
+  notify: service linux
+
+- name: service linux
+  ansible.builtin.systemd:
+    name: nessusagent.service
+    state: started
+    enabled: yes
+  become: yes
+  tags: service
+
+- name: Including task of linking
+  ansible.builtin.include_tasks: 
+    file: common.yml
+    apply:
+      tags:
+        - link_linux
+
+- name: Set fact of ansible_host name of remote machine
+  set_fact:
+    ansible_host_var: "{{ ansible_host }}" 
+
+- name: Check if the agent is linked in Tenable.io
+  valkiriaaquatica.tenable.list_agents:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    filters:
+      - type: name
+        operator: eq
+        value: "{{ ansible_host }}"
+  register: agent_verification
+  delegate_to: localhost
+  tags: verify
+
+- name: Verify the response is correct
+  ansible.builtin.assert:
+    that:
+      - agent_verification.api_response.status_code == 200
+      - agent_verification.api_response.data.agents[0].name == ansible_host
+  tags: verify
+
+##### aditionals not for the role
+- name: Unlink agent in Linux
+  valkiriaaquatica.tenable.unlink_agent_linux:
+  become: true 
+  tags: unlink

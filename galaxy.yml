@@ -1,0 +1,12 @@
+namespace: valkiriaaquatica
+name: tenable
+version: 0.0.1
+readme: README.md
+authors:
+- fernandomendietaovejero@gmail.com
+description: Tenable Nessus Agent API collection for sysops , devops and secops.
+license_file: COPYING
+repository: https://github.com/valkiriaaquatica/valkiriaaquatica.tenable.git
+# documentation: not yet
+homepage: https://github.com/valkiriaaquatica/valkiriaaquatica.tenable.git
+issues: https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/issues

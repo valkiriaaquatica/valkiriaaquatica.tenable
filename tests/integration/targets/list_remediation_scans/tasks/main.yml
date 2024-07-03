@@ -1,0 +1,11 @@
+- name: List remediation scans
+  list_remediation_scans:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+  register: response
+
+- name: Verify petition is well received
+  ansible.builtin.assert:
+    that:
+      - response.api_response.status_code == 200
+      - '"pagination" in response.api_response.data'

@@ -1,0 +1,11 @@
+create_network
+delete_network
+add_agent_to_group
+get_agent_details
+add_agent_to_group
+get_agent_group_details
+get_asset_activity_log
+get_asset_details
+get_asset_information
+get_scanner_details
+launch_scan

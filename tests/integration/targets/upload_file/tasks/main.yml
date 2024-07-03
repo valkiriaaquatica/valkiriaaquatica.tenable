@@ -1,0 +1,24 @@
+- name: Create file to upload
+  ansible.builtin.copy:
+    dest: "/tmp/hosts_to_upload.txt"
+    content: "1.1.1.1"
+    mode: '0644'
+  register: file_creation
+
+- name: Verify file creation
+  ansible.builtin.assert:
+    that:
+      - file_creation.changed
+
+- name: Upload file to Tenable
+  upload_file:
+    access_key: "{{ tenable_access_key }}"
+    secret_key: "{{ tenable_secret_key }}"
+    file_path: "/tmp/hosts_to_upload.txt"
+  register: upload_file
+
+- name: Verify file was uploades
+  ansible.builtin.assert:
+    that:
+      - upload_file.changed
+      - upload_file.api_response.status_code == 200
