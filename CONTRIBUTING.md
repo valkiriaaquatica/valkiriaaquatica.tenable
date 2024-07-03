@@ -58,12 +58,15 @@ chmod +x check_pending_tests.sh
 ```
 
 ## Blessed Contributions on Pending Developments
+- Add macOS integration for modules: download_nessus_agent, future not made link_agent_macos
 - Tests: not all modules have integration tests written, feel free to try.
 - Not all plugins/modules have the RETURN specified, feel free to complete.
 - Docs: there are nod docs written for reading the collection outside GitHub, feel free to help documenting.
 - Recheck CI: i'm working on a recheck option to actual execute all_green CI when a recheck or RECHECK is written on a pull request.
   (As a Jenkins user GitHub actions is a bit new for me)
 - Help a shared library for Jenkins to implement the actual GitHub actions like sanity, units or linter but with Jenkins.
+- Folder with roles or playbook examples integrating differente modules to solve real daily problems like patching, inventory, vulnerability detection, scanning.
+- AWX / AAP examples with inventories creating constructed and smart inventories mixing with other inventoies like cloud or service now.. to make bigger and more powerfull inventories.
 
 ## More information about contributing
 
