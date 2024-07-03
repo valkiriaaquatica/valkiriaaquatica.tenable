@@ -27,7 +27,7 @@ src_paths = [
     "tests/unit",
     "tests/integration",
 ]
-
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "LOCALFOLDER"]
 known_third_party = ["botocore", "boto3"]
 known_ansible_core = ["ansible"]
 known_ansible_amazon_aws = ["ansible_collections.amazon.aws"]
