@@ -1,6 +1,3 @@
-# (c) 2024, Fernando Mendieta (fernandomendietaovejero@gmail.com)
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -51,7 +48,7 @@ def unlink_nessus_agent(module):
         if "No host information found" in output:
             return True, "No Agent is running on the server, no need to unlink"
         else:
-            module.fail_json(msg=f"Failed to unlink Nessus Agent: {output}")
+            module.fail_json(msg="Failed to unlink Nessus Agent: {}".format(output))
 
 
 def main():
