@@ -99,9 +99,8 @@ changed:
 """
 
 
-import subprocess
-
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_native
 
 
 def link_nessus_agent(module):
@@ -114,21 +113,13 @@ def link_nessus_agent(module):
     become = module.params["become"]
 
     sudo_prefix = "sudo " if become else ""
-    command = (
-        f"{sudo_prefix}/opt/nessus_agent/sbin/nessuscli agent link "
-        f'--name="{name}" --key={linking_key} --groups="{groups}" '
-        f'--network="{network}" --host="{host}" --port={port}'
+    command = "{} /opt/nessus_agent/sbin/nessuscli agent link --name='{}' --key={} --groups='{}' --network='{}' --host='{}' --port={}".format(
+        sudo_prefix, name, linking_key, groups, network, host, port
     )
-
-    try:
-        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, timeout=10)
-        output = result.decode("utf-8")
-        return True, output, 0, True
-    except subprocess.TimeoutExpired:
-        module.fail_json(msg="Error: Command timed out. Tenable might not be installed.", rc=124)
-    except subprocess.CalledProcessError as e:
-        error_message = e.output.decode()
-        module.fail_json(msg=f"Failed to link Nessus Agent: {error_message}", rc=e.returncode)
+    rc, stdout, stderr = module.run_command(command, use_unsafe_shell=True)
+    if rc != 0:
+        module.fail_json(changed=False, stdout=to_native(stdout), stderr=to_native(stderr), rc=rc)
+    return True, stdout, stderr, rc
 
 
 def main():
@@ -145,9 +136,9 @@ def main():
         supports_check_mode=False,
     )
 
-    is_linked, output, rc, changed = link_nessus_agent(module)
+    is_linked, stdout, stderr, rc = link_nessus_agent(module)
     if is_linked:
-        module.exit_json(changed=changed, msg=output, rc=rc)
+        module.exit_json(changed=True, stdout=stdout, stderr=stderr, rc=rc)
 
 
 if __name__ == "__main__":
