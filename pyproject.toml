@@ -30,11 +30,6 @@ src_paths = [
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "LOCALFOLDER"]
 known_third_party = ["botocore", "boto3"]
 known_ansible_core = ["ansible"]
-known_ansible_amazon_aws = ["ansible_collections.amazon.aws"]
-known_ansible_community_aws = ["ansible_collections.community.aws"]
 
 [tool.flynt]
 transform-joins = true
-exclude = [
-    "ec2_metadata_facts",
-]

@@ -35,23 +35,18 @@ msg:
 """
 
 
-import subprocess
-
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_native
 
 
 def unlink_nessus_agent(module):
     command = "/opt/nessus_agent/sbin/nessuscli agent unlink"
-
-    try:
-        subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        return True, "Nessus Agent unlinked successfully"
-    except subprocess.CalledProcessError as e:
-        output = e.output.decode()
-        if "No host information found" in output:
-            return True, "No Agent is running on the server, no need to unlink"
-        else:
-            module.fail_json(msg=f"Failed to unlink Nessus Agent: {output}")
+    rc, stdout, stderr = module.run_command(command, use_unsafe_shell=True)
+    stdout = to_native(stdout)
+    stderr = to_native(stderr)
+    if rc != 0:
+        module.fail_json(changed=False, stdout=stdout, stderr=stderr, rc=rc)
+    return True, stdout, stderr, rc
 
 
 def main():
@@ -60,9 +55,9 @@ def main():
         supports_check_mode=False,
     )
 
-    is_unlinked, message = unlink_nessus_agent(module)
+    is_unlinked, stdout, stderr, rc = unlink_nessus_agent(module)
     if is_unlinked:
-        module.exit_json(changed=True, msg=message)
+        module.exit_json(changed=True, stdout=stdout, stderr=stderr, rc=rc)
 
 
 if __name__ == "__main__":
