@@ -1,16 +1,17 @@
 # First of All :)
 - This is not developed from a Tenable or RedHat employee, just someone who in his daily work found the necessity to develop it to improve his daily tasks in system administration, devops and security and his teams work also.
+- The collection is made to interact with public Tenable cloud following the endpoint: https://cloud.tenable.com  and the API documentation https://developer.tenable.com/reference/navigate . This collection is NOT made to interact with self hosted Tenable instances, just with Public Tenable API (for the moment).
 - This collection is very usefull for applying quick responses to vulnerbailities, applied devops metodology quickly with secure pipelines and administrate machines that have nessus agent installed.
 - That's why maybe you found errors or not "common standard Ansible" ideas, but I tried to follow them :).
 - Writing documentation is not my best sorry.
 - Testing has been made in Jenkins  and in GitHub actions, so if someone wants to help developing Jenkins shared libraries to  include in pipelines I will be happy.
 
-# Ansible collection for Tenable Nessus Agent
+# Ansible collection for Tenable Nessus Agent on Public Tenable Cloud (not self hosted Tenable instances)
 [![Doc](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://docs.ansible.com/ansible/latest/collections/azure/azcollection/index.html)
 [![Code of conduct](https://img.shields.io/badge/code%20of%20conduct-Ansible-silver.svg)](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html)
 [![License](https://img.shields.io/badge/license-GPL%20v3.0-brightgreen.svg)](LICENSE)
 
-This collection provides a series of Ansible modules and plugins for interact with the Tenable Nessus Agent API.
+This collection provides a series of Ansible modules and plugins for interact with the Tenable Public Nessus Agent API. This collection is NOT made for self hosted Tenable instances
 
 https://developer.tenable.com/reference/navigate and installation and linking modules.
 
@@ -100,6 +101,7 @@ There are many ways in which you can participate in the project, for example:
 - Review the documentation and make pull requests for anything from typos to new content
 - If you are interested in fixing issues and contributing directly to the code base, please see the [CONTRIBUTING](CONTRIBUTING.md) document
 - Check "Blessed Contributions on Pending Developments" in the file [CONTRIBUTING](CONTRIBUTING.md) to see ideas to help dn develop
+- As it was commented on issue: https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/issues/2 the development of modules to interact with self hosted Tenable instances would be really nice to include.
 
 ## License
 
