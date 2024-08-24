@@ -66,7 +66,6 @@ from typing import Any
 from typing import Dict
 from urllib.error import HTTPError
 from urllib.error import URLError
-from urllib.parse import urlencode
 
 from ansible.module_utils.urls import Request
 
