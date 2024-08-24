@@ -92,6 +92,30 @@ compose:
   hash_id: id | md5
 ```
 
+### Event Driven - Ansible Rulebooks
+
+Fetch data from an event source like Tenable Public API can be made using the plugin eventstenable
+that can be found in /plugins/event_source/eventstenable.py
+An easy example is:
+
+```yaml
+---
+- name: Retrieve critical vullnerabilities from Tenable API every 30 minutes
+  hosts: localhost
+  sources:
+    - valkiriaaquatica.tenable.eventstenable:
+        endpoint: "workbenches/vulnerabilities?filter.0.filter=severity&filter.0.quality=eq&filter.0.value=Critical"
+        data_key: "vulnerabilities"
+        interval: 30
+
+  rules:
+    - name: Run ansible hello default EDA playbook if critical vulnerbaility comes from 12345 plugin
+      condition: event.tenable.plugin_id == "12345"
+      action:
+        run_playbook:
+          name: ansible.eda.hello
+```
+
 ## Contributing
 
 There are many ways in which you can participate in the project, for example:
