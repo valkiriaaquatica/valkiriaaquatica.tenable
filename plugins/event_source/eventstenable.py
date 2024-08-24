@@ -62,10 +62,13 @@ Example:
 import asyncio
 import json
 import os
+from typing import Any
+from typing import Dict
+from urllib.error import HTTPError
+from urllib.error import URLError
 from urllib.parse import urlencode
-from urllib.error import HTTPError, URLError
+
 from ansible.module_utils.urls import Request
-from typing import Any, Dict
 
 
 class AuthenticationError(Exception):
