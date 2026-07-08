@@ -178,7 +178,7 @@ def get_filename(os_distribution, os_version, nessus_agent_version=None):
             "15": f"NessusAgent-{nessus_agent_version}-suse15.x86_64.rpm",
         },
         "Ubuntu": {
-            "default": f"NessusAgent-{nessus_agent_version}-ubuntu1404_amd64.deb",
+            "default": f"NessusAgent-{nessus_agent_version}-ubuntu1604_amd64.deb",
         },
         "Windows": {
             "default": f"NessusAgent-{nessus_agent_version}-x64.msi",
