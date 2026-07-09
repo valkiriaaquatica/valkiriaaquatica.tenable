@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/compare/v0.1.0...v0.1.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* update Ubuntu package filename to version 16.04 because 14.04 does not exist anymore ([#8](https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/issues/8)) ([efaec4a](https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/commit/efaec4a429b245813ea9c3dd550a47514ca73142))
+
 ## [0.1.0](https://github.com/valkiriaaquatica/valkiriaaquatica.tenable/compare/v0.0.2...v0.1.0) (2025-07-22)
 
 
