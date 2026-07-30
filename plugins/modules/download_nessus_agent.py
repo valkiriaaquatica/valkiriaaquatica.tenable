@@ -167,6 +167,10 @@ def get_filename(os_distribution, os_version, nessus_agent_version=None):
         "Debian": {
             "default": f"NessusAgent-{nessus_agent_version}-debian10_amd64.deb",
         },
+        "AlmaLinux": {
+            "8": f"NessusAgent-{nessus_agent_version}-el8.x86_64.rpm",
+            "9": f"NessusAgent-{nessus_agent_version}-el9.x86_64.rpm",
+        },
         "RedHat": {
             "6": f"NessusAgent-{nessus_agent_version}-el6.x86_64.rpm",
             "7": f"NessusAgent-{nessus_agent_version}-el7.x86_64.rpm",
